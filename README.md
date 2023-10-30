@@ -1,6 +1,7 @@
 # TinyGo.nvim
 This NeoVim plugin lets you configure Go's environment variables so that Go's LSP server
-(i.e. `gopls`) offers accurate completions and suggestions.
+(i.e. `gopls`) offers accurate completions and suggestions. A sane and working TinyGo
+installation is of course a prerequisite for the plugin to work!
 
 Under the hood it basically parses the output of `go env`, `tinygo targets` and `tinygo target ...`
 to then restart the attached `gopls` instance with the appropriate environment variables. As
