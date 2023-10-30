@@ -13,12 +13,6 @@ function M.setup()
 	M["currentGOROOT"]  = M["originalGOROOT"]
 	M["currentGOFLAGS"] = M["originalGOFLAGS"]
 
-	vim.api.nvim_create_user_command("TinyGoSetTarget", M.setTarget, {nargs = 1, complete = M.targetOptions})
-	vim.api.nvim_create_user_command("TinyGoTargets", M.printTargets, {nargs = 0})
-	vim.api.nvim_create_user_command("TinyGoEnv", M.printEnv, {nargs = 0})
-end
-
-function M.targetOptions(ArgLead, CmdLine, CursorPos)
 	local pipe = io.popen("tinygo targets")
 
 	if not pipe then
@@ -31,7 +25,15 @@ function M.targetOptions(ArgLead, CmdLine, CursorPos)
 		table.insert(targets, target)
 	end
 
-	return targets
+	M["targets"] = targets
+
+	vim.api.nvim_create_user_command("TinyGoSetTarget", M.setTarget, {nargs = 1, complete = M.targetOptions})
+	vim.api.nvim_create_user_command("TinyGoTargets", M.printTargets, {nargs = 0})
+	vim.api.nvim_create_user_command("TinyGoEnv", M.printEnv, {nargs = 0})
+end
+
+function M.targetOptions(ArgLead, CmdLine, CursorPos)
+	return M["targets"]
 end
 
 function M.setTarget(opts)
