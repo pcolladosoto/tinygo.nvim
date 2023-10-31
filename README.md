@@ -45,6 +45,12 @@ to be extremely helpful:
   (accessible through `:h lspconfig` within Neovim) offers some insights into how LSP servers are configured. For instance, it
   explains how `lspconfig.gopls.setup` actually restarts the LSP instance attached to a buffer, which made our life that much easier!
 
+Note this repository 'lives' locally on our development machine over at:
+
+    ~/.local/share/nvim/site/pack/packer/start/tinygo.nvim
+
+That's because it's been installed with [packer.nvim](https://github.com/wbthomason/packer.nvim) and that's where stuff goes...
+
 ## Dependencies
 As previously stated, this plugin relies on `nvim-lspconfig` to manage the attached LSP instance. However, this plugin can instead
 resort to 'pure' API calls if this were to prove an obstacle. Given the pervasiveness of `nvim-lspconfig` that is unlikely to happen,
