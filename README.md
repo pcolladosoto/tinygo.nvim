@@ -76,9 +76,10 @@ return {
 ```
 
 ## Options
-Addtionally you can provide the following options.
+Additionally you can provide the following options.
 
-- **`config_file`** [string]: Defines the path to config file.
+- **`config_file`** [string]: Defines the path to a `json` config file. (default: `.tinygo.json`)
+- **`cmd`** [string]: The TinyGo command that is used when executing. (default: `tinygo`)
 
 ## Usage
 This plugin provides three different user commands:
@@ -90,6 +91,12 @@ This plugin provides three different user commands:
 - `:TinyGoTargets`: This command will simply list available TinyGo targets, excluding `original`.
 
 - `:TinyGoEnv`: This commmand prints the currently configured target, `GOROOT` and `GOFLAGS`.
+
+- `:TinyGoFlash ?<target-name>`: This commmand flashes the code to the provided target. If no target is given the
+   currently set target is used.
+
+- `:TinyGoMonitor <...>`: This command opens a floating window which streams the output of `tinygo monitor`.
+  You can provide additional cli flags to the command by appending them.
 
 Alternatively you can add a file (default: `.tinygo.json`) into your cwd and set your target there.
 This plugin automatically loads this config file on startup and dynamically reloads when the config
