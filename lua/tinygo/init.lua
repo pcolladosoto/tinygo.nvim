@@ -63,57 +63,53 @@ function M.targetOptions(ArgLead, CmdLine, CursorPos)
 end
 
 function M.setTarget(opts)
-	local ok, lspconfig = pcall(require, "lspconfig")
-	if not ok then
-		vim.print("error requiring lspconfig...")
-		return
-	end
+	local currentGOROOT = ""
+	local currentGOFLAGS = ""
 
 	if opts.fargs[1] == "original" then
+		currentGOROOT = M["originalGOROOT"]
+		currentGOFLAGS = M["originalGOFLAGS"]
+
 		M["currentTarget"] = opts.fargs[1]
-		M["currentGOROOT"] = M["originalGOROOT"]
-		M["currentGOFLAGS"] = M["originalGOFLAGS"]
+		M["currentGOROOT"] = currentGOROOT
+		M["currentGOFLAGS"] = currentGOFLAGS
+	else
+		local ok, rawData = pcall(vim.fn.system, string.format("tinygo info -json %s", opts.fargs[1]))
+		if not ok then
+			vim.print("error calling tinygo: " .. rawData)
+			return
+		end
 
-		lspconfig.gopls.setup({
-			cmd_env = {
-				GOROOT  = M["originalGOROOT"],
-				GOFLAGS = M["originalGOFLAGS"]
-			}
-		})
-		return
+		local ok, rawJSON = pcall(vim.fn.json_decode, rawData)
+		if not ok then
+			vim.print("error decoding the JSON: " .. rawJSON)
+			return
+		end
+
+		if not vim.fn.has_key(rawJSON, "goroot") or not vim.fn.has_key(rawJSON, "build_tags") then
+			vim.print("the generated JSON is missing keys...")
+			return
+		end
+
+		currentGOROOT = rawJSON["goroot"]
+		currentGOFLAGS = "-tags=" .. vim.fn.join(rawJSON["build_tags"], ',')
+
+		M["currentTarget"] = opts.fargs[1]
+		M["currentGOROOT"] = currentGOROOT
+		M["currentGOFLAGS"] = currentGOFLAGS
 	end
 
-	local ok, rawData = pcall(vim.fn.system, string.format("tinygo info -json %s", opts.fargs[1]))
-	if not ok then
-		vim.print("error calling tinygo: " .. rawData)
-		return
-	end
-
-	local ok, rawJSON = pcall(vim.fn.json_decode, rawData)
-	if not ok then
-		vim.print("error decoding the JSON: " .. rawJSON)
-		return
-	end
-
-	if not vim.fn.has_key(rawJSON, "goroot") or not vim.fn.has_key(rawJSON, "build_tags") then
-		vim.print("the generated JSON is missing keys...")
-		return
-	end
-
-	local currentGOROOT = rawJSON["goroot"]
-	local currentGOFLAGS = "-tags=" .. vim.fn.join(rawJSON["build_tags"], ',')
-
-	M["currentTarget"] = opts.fargs[1]
-	M["currentGOROOT"] = currentGOROOT
-	M["currentGOFLAGS"] = currentGOFLAGS
-
-	-- This'll restart the LSP server!
-	lspconfig.gopls.setup({
+	-- Update the configuration
+	vim.lsp.config('gopls', {
 		cmd_env = {
 			GOROOT = currentGOROOT,
 			GOFLAGS = currentGOFLAGS
 		}
 	})
+
+	-- Restart the LSP server
+	vim.lsp.enable('gopls', false)
+	vim.lsp.enable('gopls', true)
 end
 
 function M.printTargets()
