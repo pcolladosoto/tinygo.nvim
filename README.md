@@ -5,18 +5,73 @@ installation is of course a prerequisite for the plugin to work!
 
 Under the hood it basically parses the output of `go env`, `tinygo targets` and `tinygo target ...`
 to then restart the attached `gopls` instance with the appropriate environment variables. As
-of now, it relies on [`nvim-lspconfig`](https://github.com/neovim/nvim-lspconfig) to restart the
-attached `gopls` instance, but it can also be made to cooperate with the stock Nvim LSP API
-documented [here](https://neovim.io/doc/user/lsp.html).
+of now, it relies on [`nvim-lspconfig`][nvim-lspconfig] to restart the attached `gopls` instance,
+but it can also be made to cooperate with the stock Nvim LSP API documented [here][lsp-doc].
 
-The plugin is loosely based on a preexisting one written in Vim Script:
-[`sago35/tinygo.vim`](https://github.com/sago35/tinygo.vim). Thanks a lot for the guidance!
+The plugin is loosely based on a preexisting one written in Vim Script: [`sago35/tinygo.vim`][tinygo.vim].
+Thanks a lot for the guidance!
 
 The initial (and authoritative) source of information on what needs to be configured for TinyGo's
-correct integration with `gopls` can be found [here](https://tinygo.org/docs/guides/ide-integration/).
+correct integration with `gopls` can be found [here][tinygo-ide-integration]. See the [kudos](#kudos)
+section for a list of very useful resources.
 
-Aside from that, in writing this (our very first) plugin we found the following sites and documentation
-to be extremely helpful:
+Note this repository 'lives' locally on our development machine over at:
+
+    ~/.local/share/nvim/site/pack/packer/start/tinygo.nvim
+
+That's because it's been installed with [packer.nvim][] and that's where stuff goes...
+
+## Dependencies
+As previously stated, this plugin relies on `nvim-lspconfig` to manage the attached LSP instance.
+However, this plugin can instead resort to 'pure' API calls if this were to prove an obstacle.
+Given the pervasiveness of `nvim-lspconfig` that is unlikely to happen, but it is nice to know we
+can count on some wiggle room!
+
+## Installation
+This plugin can be installed through regular plugin managers.
+
+### [Packer.nvim](https://github.com/wbthomason/packer.nvim)
+```lua
+use {
+    "pcolladosoto/tinygo.nvim",
+    config = function() require("tinygo").setup({}) end
+}
+```
+
+### [Lazy.nvim](https://github.com/folke/lazy.nvim)
+```lua
+return {
+    "pcolladosoto/tinygo.nvim",
+    opts = {},
+}
+```
+
+## Options
+Additionally you can provide the following options.
+
+- **`config_file` {string}**: Defines the path to a configuration file specifying the target to
+  use. If the file `.tinygo.json` is present in your current directory it will be loaded by
+  default. When the file is changed the configuration will be automatically reloaded too!
+
+  The syntax of the configuration file is rather simple, but it might grow in the future... For
+  now, you need only specify the target to use (i.e. one of the targets show with `tinygo targets`)
+  as a string:
+
+      {"target": "pico"}
+
+## Usage
+This plugin provides three user commands:
+
+- `:TinyGoSetTarget <target-name>`: This command configures the target name passed as a parameter. TABbing will
+  display a list of available targets, including `original`. This special target will leave the Go environment
+  as it was before configuring any other target.
+
+- `:TinyGoTargets`: This command will simply list available TinyGo targets, excluding `original`.
+
+- `:TinyGoEnv`: This command prints the currently configured target, `GOROOT` and `GOFLAGS`.
+
+## Kudos
+When writing this (our first!) plugin, we found the following sites extremely helpful!
 
 - [Neovim: Plugins to get started](https://vonheikemen.github.io/devlog/tools/neovim-plugins-to-get-started/): Great discussion
   on the anatomy of Neovim plugins and how they are structured.
@@ -45,64 +100,9 @@ to be extremely helpful:
   (accessible through `:h lspconfig` within Neovim) offers some insights into how LSP servers are configured. For instance, it
   explains how `lspconfig.gopls.setup` actually restarts the LSP instance attached to a buffer, which made our life that much easier!
 
-Note this repository 'lives' locally on our development machine over at:
-
-    ~/.local/share/nvim/site/pack/packer/start/tinygo.nvim
-
-That's because it's been installed with [packer.nvim](https://github.com/wbthomason/packer.nvim) and that's where stuff goes...
-
-## Dependencies
-As previously stated, this plugin relies on `nvim-lspconfig` to manage the attached LSP instance. However, this plugin can instead
-resort to 'pure' API calls if this were to prove an obstacle. Given the pervasiveness of `nvim-lspconfig` that is unlikely to happen,
-but it is nice to know we can count on some wiggle room!
-
-## Installation
-This plugin can be installed through regular plugin managers.
-
-### [Packer.nvim](https://github.com/wbthomason/packer.nvim)
-```lua
-use {
-    "pcolladosoto/tinygo.nvim",
-    config = function() require("tinygo").setup() end
-}
-```
-
-### [Lazy.nvim](https://github.com/folke/lazy.nvim)
-```lua
-return {
-    "pcolladosoto/tinygo.nvim",
-    opts = {},
-}
-```
-
-## Options
-Addtionally you can provide the following options.
-
-- **`config_file`** [string]: Defines the path to config file.
-
-## Usage
-This plugin provides three different user commands:
-
-- `:TinyGoSetTarget <target-name>`: This command configures the target name passed as a parameter. TABbing will
-  display a list with available targets, including `original`. This special target will leave the Go
-  environment as it was before configuring any other target.
-
-- `:TinyGoTargets`: This command will simply list available TinyGo targets, excluding `original`.
-
-- `:TinyGoEnv`: This commmand prints the currently configured target, `GOROOT` and `GOFLAGS`.
-
-Alternatively you can add a file (default: `.tinygo.json`) into your cwd and set your target there.
-This plugin automatically loads this config file on startup and dynamically reloads when the config
-file is changed.
-
-Here is an example of the config file and its possible options.
-
-```json
-{
-  "target": "pico"
-}
-```
-
-- **`target`** [string]: Auto sets the target to the provided value. Has to be one of 'tinygo targets' results.
-
-I hope you find this useful!
+<!-- REFs -->
+[nvim-lspconfig]: https://github.com/neovim/nvim-lspconfig
+[lsp-doc]: https://neovim.io/doc/user/lsp.html
+[tinygo.vim]: https://github.com/sago35/tinygo.vim
+[tinygo-ide-integration]: https://tinygo.org/docs/guides/ide-integration/
+[packer.nvim]: https://github.com/wbthomason/packer.nvim
